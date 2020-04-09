@@ -1,0 +1,284 @@
+
+<html>
+<head>
+	<title>Stuff for Web</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
+    <!-- Include the script with the ‘async’ attribute. -->
+    <script src="https://cdn.apple-cloudkit.com/ck/2/cloudkit.js" async></script>
+    
+    
+    
+      <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      @media (prefers-color-scheme: light) {
+          body {
+              background-color: white;
+              color: #008d5e;
+          }
+      }
+      @media (prefers-color-scheme: no preference) {
+          body {
+              background-color: white;
+              color: #008d5e;
+          }
+      }
+      @media (prefers-color-scheme: dark) {
+          body {
+              background-color: #1b1c1b;
+              color: #008d5e;
+          }
+      }
+      
+      #mainArea {
+         
+         text-align: center;
+         height: 400px;
+         width: 400px;
+         margin: 0;
+         padding: 0;
+         position: fixed;
+         top: 50%;
+         left: 50%;
+         margin-top: -50px;
+         margin-left: -200px;
+         @media (prefers-color-scheme: dark) {
+             background-color: #1b1c1b;
+         }
+         @media (prefers-color-scheme: light) {
+             background-color: white;
+         }
+         @media (prefers-color-scheme: no preference) {
+             background-color: white;
+         }
+      }
+      .signArea {
+          bottom: 20;
+          right: 20;
+          position: fixed;
+      }
+      #checkmark {
+        position: fixed;
+        bottom: 20;
+        left: 20;
+        border-radius: 50%;
+        width: 50;
+        height: 50;
+      }
+      #task {
+          border-radius: 12px;
+          border: 2px solid #008d5e;
+          padding: 20px;
+          width: 280px;
+          margin: 0 auto;
+          margin-left: auto;
+          margin-right: auto;
+          text-align:center;
+          height: 15px;
+          font-size: 15px;
+          background-color: transparent;
+          color: #008d5e;
+      }
+      #addBtn {
+          
+          background-color: transparent;
+          width: 100px;
+          height: 100px;
+          position: fixed;
+          bottom: 10;
+          left: 10;
+          border: none;
+          color: white;
+          padding: 20px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          margin: 4px 2px;
+          cursor: pointer;
+          font-family: Arial;
+          font-size: 30px;
+          margin: 0;
+          line-height: 3px;
+          
+      }
+
+      #bottomSuccess {
+          display: none;
+          position: fixed;
+          bottom: 20;
+          left: 90;
+          border-radius: 50%;
+          width: 70;
+          height: 50;
+      }
+      #bottomFail {
+          display: none;
+          position: fixed;
+          bottom: 20;
+          left: 90;
+          border-radius: 50%;
+          width: 70;
+          height: 50;
+           }
+      #content {
+          
+          display: none;
+          height: 400px;
+          width: 400px;
+          margin: 0;
+          padding: 0;
+          position: fixed;
+          top: 40%;
+          left: 50%;
+          margin-top: -50px;
+          margin-left: -200px;
+          @media (prefers-color-scheme: dark) {
+              background-color: #363837;
+          }
+          @media (prefers-color-scheme: light) {
+              background-color: white;
+          }
+          @media (prefers-color-scheme: no preference) {
+              background-color: white;
+          }
+          text-align: center;
+      }
+    </style>
+</head>
+<body>
+	<div class="container">
+		<div class="page-header">
+			<h1>Stuff for Web <small>Add tasks from anywhere</small></h1>
+		</div>
+        <div class="signArea">
+            <div id="apple-sign-in-button"></div>
+            <div id="apple-sign-out-button"></div>
+        </div>
+	</div>
+    <div id="mainArea">
+        <h3>Sorry, it seems you aren't signed in your apple id, please sign in human. If you are already signed in please reload the page.</h3>
+    </div>
+    <div id="content">
+      <h3>Tasks added from here will appear in the Web List section</h3>
+     <input type="text" id="task" placeholder="Here comes your task"/>
+    </div>
+        <div>
+            <img src="checkmark.png" id="checkmark">
+             <button id="addBtn" onclick="saveTask();"></button>
+        <div/>
+    <div id="bottomSuccess">
+        <h4>Saved Succesfully</h4>
+    <div/>
+    <div id="bottomFail">
+        <h4>Something went wrong</h4>
+    <div/>
+     <script>
+         function closeAlert() {
+            document.getElementById("bottomSuccess").style.display = "none";
+            document.getElementById("bottomFail").style.display = "none";
+         }
+         function saveTask()
+         {
+             var container = CloudKit.getDefaultContainer();
+             var privateDB = container.privateCloudDatabase;
+
+             var record = {
+               recordType: "WebTask",
+               fields: {
+                   title: { value: document.getElementById("task").value },
+               }
+             };
+
+             return privateDB.newRecordsBatch().create(record).commit()
+               .then(function(response) {
+                 if (response.hasErrors) {
+                  document.getElementById("bottomFail").style.display = "block";
+                  window.setTimeout("closeAlert();", 3000);
+                   throw response.errors[0];
+
+                 } else {
+                   document.getElementById("bottomSuccess").style.display = "block";
+                   window.setTimeout("closeAlert();", 3000);
+                   var createdRecord = response.records[0];
+                 }
+               });
+         }
+    </script>
+    <script>
+         window.addEventListener('cloudkitloaded', function() {
+           // Now the global namespace CloudKit is defined and you can proceed
+           // to configure your application.
+          CloudKit.configure({
+             locale: 'en-us',
+
+             containers: [{
+
+               // Change this to a container identifier you own.
+               containerIdentifier: 'iCloud.com.davidretegan.Stuff',
+
+               apiTokenAuth: {
+                 // And generate a web token through CloudKit Dashboard.
+                 apiToken: '4f8dfcb01a7f32376909e678dffa5d289b979eb200d6fe678cbccee3166f274b',
+
+                 persist: true, // Sets a cookie.
+
+                 signInButton: {
+                   id: 'apple-sign-in-button',
+                   theme: 'black',
+            // Other options: 'white', 'white-with-outline'.
+                 },
+
+                 signOutButton: {
+                   id: 'apple-sign-out-button',
+                   theme: 'black',
+                   
+                 }
+               },
+
+               environment: 'development'
+             }]
+           });
+           demoSetUpAuth();
+         });
+
+       function demoSetUpAuth() {
+
+         var container = CloudKit.getDefaultContainer();
+
+         function gotoAuthenticatedState(userIdentity) {
+  
+           document.getElementById("mainArea").style.display = "none";
+           document.getElementById("content").style.display = "block";
+           document.getElementById("addArea").style.display = "block";
+           container
+             .whenUserSignsOut()
+             .then(gotoUnauthenticatedState);
+         }
+         function gotoUnauthenticatedState(error) {
+
+           document.getElementById("mainArea").style.display = "block";
+           document.getElementById("content").style.display = "none";
+           document.getElementById("addArea").style.display = "none";
+           container
+             .whenUserSignsIn()
+             .then(gotoAuthenticatedState)
+             .catch(gotoUnauthenticatedState);
+         }
+
+         // Check a user is signed in and render the appropriate button.
+         return container.setUpAuth().then(function(userIdentity) {
+             
+             if(userIdentity) {
+               gotoAuthenticatedState(userIdentity);
+             } else {
+               gotoUnauthenticatedState();
+             }
+           });
+       }
+       </script>
+</body>
+</html>
